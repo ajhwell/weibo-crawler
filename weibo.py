@@ -38,6 +38,34 @@ logging_path = os.path.split(os.path.realpath(__file__))[0] + os.sep + "logging.
 logging.config.fileConfig(logging_path)
 logger = logging.getLogger("weibo")
 
+import emails
+from emails.template import JinjaTemplate as T
+import smtplib
+
+def send_email(subject,contents):
+    USERNAME = 'ajhwell@2d2.onmicrosoft.com'
+    PASSWORD = '890890'
+    smtp_conf = {'host': 'smtp.office365.com',
+                 'user': USERNAME,
+                 'password': PASSWORD,
+                 'port': 587,
+                 'tls': True}
+    message = emails.html(subject=T(subject),
+                          html=T(contents),
+                          mail_from=('auto-reporter', USERNAME))
+    # message.attach(data=open('readme.md', 'r'), filename="readme.txt")
+    # r = message.send(to=('Orangleliu', USERNAME), smtp=smtp_conf)
+    # print(r)
+
+
+    
+    mailserver = smtplib.SMTP('smtp.office365.com', 587)
+    mailserver.ehlo()
+    mailserver.starttls()
+    mailserver.login(USERNAME, PASSWORD)
+    mailserver.sendmail(USERNAME, 'lsmwell@qq.com',message.as_string())
+    mailserver.quit()
+
 
 class Weibo(object):
     def __init__(self, config):
@@ -1310,7 +1338,9 @@ class Weibo(object):
                 writer = csv.writer(f)
                 if is_first_write:
                     writer.writerows([headers])
+                    # print([headers]+'tttttttttttttttttt111')
                 writer.writerows(result_data)
+                # print(result_data+'nnnnnrrrrrrrrrrr0000000')
         if headers[0] == "id":
             logger.info("%d条微博写入csv文件完毕,保存路径:", self.got_count)
         else:
@@ -1632,11 +1662,13 @@ class Weibo(object):
         value = json.get(target_name)
         if value:
             dict[source_name] = value
-
+# ///////////////////////////////////////////////////////////////////////////////////////////////////
     def sqlite_insert_weibo(self, con: sqlite3.Connection, weibo: dict):
         sqlite_weibo = self.parse_sqlite_weibo(weibo)
+        print(weibo['screen_name'],weibo['text']+weibo["full_created_at"],'---------------------')
+        send_email(weibo['screen_name'],weibo['text']+weibo["full_created_at"])
         self.sqlite_insert(con, sqlite_weibo, "weibo")
-
+# //////////////////////////////////////////////////////////////////////////////////////////////////////////
     def parse_sqlite_weibo(self, weibo):
         if not weibo:
             return
