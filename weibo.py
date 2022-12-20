@@ -44,7 +44,7 @@ import smtplib
 
 def send_email(subject,contents):
     USERNAME = 'ajhwell@2d2.onmicrosoft.com'
-    PASSWORD = '890890'
+    PASSWORD = '******'
     smtp_conf = {'host': 'smtp.office365.com',
                  'user': USERNAME,
                  'password': PASSWORD,
